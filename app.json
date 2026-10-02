@@ -3,22 +3,27 @@
     "name": "oak-io-mobile",
     "slug": "oak-io-mobile",
     "version": "1.0.0",
+    "scheme": "oakio",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./public/logo_app.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#1e1b4b",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./public/logo_app.png",
+        "monochromeImage": "./public/logo_app.png"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./public/logo_app.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }
