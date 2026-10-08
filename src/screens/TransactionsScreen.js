@@ -6,11 +6,13 @@ import AppHeader from "../components/AppHeader";
 import TransactionForm from "../components/TransactionForm";
 import { useFinance } from "../context/FinanceContext";
 import { signedAmount } from "../utils/format";
-import { Card, Pill, PrimaryButton, Subtitle, Title, colors, toneColor } from "../design-system";
+import { Card, Pill, PrimaryButton, Subtitle, Title } from "../design-system";
+import { useTheme } from "../context/ThemeContext";
 
 const FILTERS = ["Todas", "Ganho", "Gasto", "Investimento"];
 
 export default function TransactionsScreen() {
+  const { colors, toneColor } = useTheme();
   const { transactions, selectedMonth } = useFinance();
   const [filter, setFilter] = useState("Todas");
   const [formOpen, setFormOpen] = useState(false);

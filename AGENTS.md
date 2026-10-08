@@ -36,6 +36,7 @@ Use `src/design-system`: `Card`, `PrimaryButton`, `Pill`, `ActionTile`, `Field`,
 - Expo SDK 57, JavaScript
 - React Navigation (native stack and bottom tabs). Do not migrate to Expo Router or `src/app/`
 - NativeWind 4 with Tailwind CSS 3. Install Tailwind classes only through NativeWind
+- UI no estilo shadcn via React Native Reusables em `src/components/ui` (`npx @react-native-reusables/cli add <component>`). Preferir esses componentes em telas novas; o design-system legado ainda existe nas demais telas
 - Icons from `lucide-react-native`
 - App icon: `public/logo_app.png`
 - Install native packages with `npx expo install`, not a bare `npm install`

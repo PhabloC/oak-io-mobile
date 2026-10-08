@@ -1,7 +1,10 @@
 import { Pressable, Text, View } from "react-native";
-import { colors, radius, shadow } from "./tokens";
+import { useTheme } from "../context/ThemeContext";
+import { radius } from "./tokens";
 
 export function PrimaryButton({ label, onPress, icon, disabled = false }) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
@@ -28,6 +31,8 @@ export function PrimaryButton({ label, onPress, icon, disabled = false }) {
 }
 
 export function Pill({ label, selected = false, onPress, icon }) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
@@ -47,14 +52,21 @@ export function Pill({ label, selected = false, onPress, icon }) {
   );
 }
 
-export function ActionTile({ label, onPress, icon, tint = colors.accentSoft }) {
+export function ActionTile({ label, onPress, icon, tint, compact = false }) {
+  const { colors, shadow } = useTheme();
+  const backgroundTint = tint || colors.accentSoft;
+  const outer = compact ? 48 : 56;
+  const inner = compact ? 30 : 36;
+  const radiusOuter = compact ? 14 : 18;
+  const radiusInner = compact ? 10 : 12;
+
   return (
-    <Pressable onPress={onPress} style={{ alignItems: "center", width: 76 }}>
+    <Pressable onPress={onPress} style={{ alignItems: "center", width: compact ? 64 : 76 }}>
       <View
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 18,
+          width: outer,
+          height: outer,
+          borderRadius: radiusOuter,
           backgroundColor: colors.surface,
           alignItems: "center",
           justifyContent: "center",
@@ -63,10 +75,10 @@ export function ActionTile({ label, onPress, icon, tint = colors.accentSoft }) {
       >
         <View
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 12,
-            backgroundColor: tint,
+            width: inner,
+            height: inner,
+            borderRadius: radiusInner,
+            backgroundColor: backgroundTint,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -74,7 +86,9 @@ export function ActionTile({ label, onPress, icon, tint = colors.accentSoft }) {
           {icon}
         </View>
       </View>
-      <Text style={{ marginTop: 8, color: colors.ink, fontSize: 12, fontWeight: "600" }}>{label}</Text>
+      <Text style={{ marginTop: compact ? 4 : 8, color: colors.ink, fontSize: compact ? 11 : 12, fontWeight: "600" }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

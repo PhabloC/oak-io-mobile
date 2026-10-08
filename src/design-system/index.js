@@ -1,4 +1,4 @@
-export { colors, radius, shadow, headerGradient, toneColor } from "./tokens";
+export { colors, radius, shadow, headerGradient, toneColor, lightTheme, darkTheme, getTheme } from "./tokens";
 export { Card } from "./Card";
 export { PrimaryButton, Pill, ActionTile } from "./Button";
 export { Field } from "./Field";

@@ -1,16 +1,18 @@
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "../design-system";
+import AnimateOnFocus from "./AnimateOnFocus";
 
 export default function Screen({ children }) {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={["top"]}>
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 128 }}
+          contentContainerClassName="px-5 pb-32 pt-2"
           showsVerticalScrollIndicator={false}
         >
-          {children}
+          <AnimateOnFocus delay={20} duration={360}>
+            {children}
+          </AnimateOnFocus>
         </ScrollView>
       </SafeAreaView>
     </View>

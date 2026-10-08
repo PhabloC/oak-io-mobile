@@ -5,9 +5,11 @@ import Screen from "../components/Screen";
 import AppHeader from "../components/AppHeader";
 import { useFinance } from "../context/FinanceContext";
 import { formatBRL } from "../utils/format";
-import { Card, Field, Pill, PrimaryButton, Title, colors } from "../design-system";
+import { Card, Field, Pill, PrimaryButton, Title } from "../design-system";
+import { useTheme } from "../context/ThemeContext";
 
 export default function MetasScreen() {
+  const { colors } = useTheme();
   const { goals, addGoal } = useFinance();
   const [tab, setTab] = useState("andamento");
   const [open, setOpen] = useState(false);

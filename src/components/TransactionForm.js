@@ -4,11 +4,13 @@ import { X } from "lucide-react-native";
 import { DEFAULT_CATEGORIES } from "../utils/categories";
 import { dateForMonth } from "../utils/transactions";
 import { useFinance } from "../context/FinanceContext";
-import { Field, Pill, PrimaryButton, colors, radius } from "../design-system";
+import { Field, Pill, PrimaryButton, radius } from "../design-system";
+import { useTheme } from "../context/ThemeContext";
 
 const TYPES = ["Ganho", "Gasto", "Investimento"];
 
 export default function TransactionForm({ visible, onClose }) {
+  const { colors } = useTheme();
   const { addTransaction, selectedMonth } = useFinance();
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");

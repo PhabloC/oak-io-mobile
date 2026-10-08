@@ -4,11 +4,13 @@ import Screen from "../components/Screen";
 import AppHeader from "../components/AppHeader";
 import { useFinance } from "../context/FinanceContext";
 import { formatBRL } from "../utils/format";
-import { Card, Field, Pill, PrimaryButton, Title, colors } from "../design-system";
+import { Card, Field, Pill, PrimaryButton } from "../design-system";
+import { useTheme } from "../context/ThemeContext";
 
 const TYPES = ["Renda fixa", "Ações", "FIIs", "ETF", "Cripto"];
 
 export default function InvestimentoScreen() {
+  const { colors } = useTheme();
   const { assets, addAsset } = useFinance();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -29,9 +31,8 @@ export default function InvestimentoScreen() {
 
   return (
     <Screen>
-      <AppHeader />
-      <View style={{ marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Title>Investimentos</Title>
+      <AppHeader title="Investimentos" showBack />
+      <View style={{ marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "flex-end" }}>
         <Pill label="Ativo" selected onPress={() => setOpen(true)} />
       </View>
       <Card style={{ marginBottom: 12, backgroundColor: colors.accent }}>

@@ -1,19 +1,21 @@
 {
   "expo": {
-    "name": "oak-io-mobile",
+    "name": "OakIo",
     "slug": "oak-io-mobile",
     "version": "1.0.0",
     "scheme": "oakio",
     "orientation": "portrait",
     "icon": "./public/logo_app.png",
-    "userInterfaceStyle": "dark",
-    "backgroundColor": "#1e1b4b",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F4F2FA",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.phabloc.oakio"
     },
     "android": {
+      "package": "com.phabloc.oakio",
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#F4F2FA",
         "foregroundImage": "./public/logo_app.png",
         "monochromeImage": "./public/logo_app.png"
       }
@@ -24,6 +26,12 @@
     },
     "plugins": [
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7d6f4c9a-acd9-458c-b8a5-2f43424af91d"
+      }
+    },
+    "owner": "phabloc"
   }
 }

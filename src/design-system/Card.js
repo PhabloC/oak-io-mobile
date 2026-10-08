@@ -1,7 +1,10 @@
 import { View } from "react-native";
-import { colors, radius, shadow } from "./tokens";
+import { useTheme } from "../context/ThemeContext";
+import { radius } from "./tokens";
 
 export function Card({ children, style, padded = true }) {
+  const { colors, shadow } = useTheme();
+
   return (
     <View
       style={[

@@ -4,9 +4,11 @@ import Screen from "../components/Screen";
 import AppHeader from "../components/AppHeader";
 import { useFinance } from "../context/FinanceContext";
 import { formatBRL } from "../utils/format";
-import { Card, Field, Pill, PrimaryButton, Title, colors } from "../design-system";
+import { Card, Field, Pill, PrimaryButton } from "../design-system";
+import { useTheme } from "../context/ThemeContext";
 
 export default function DividasScreen() {
+  const { colors } = useTheme();
   const { debts, addDebt, payDebt } = useFinance();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -32,9 +34,8 @@ export default function DividasScreen() {
 
   return (
     <Screen>
-      <AppHeader />
-      <View style={{ marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Title>Dívidas</Title>
+      <AppHeader title="Dívidas" showBack />
+      <View style={{ marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "flex-end" }}>
         <Pill label="Nova" selected onPress={() => setOpen(true)} />
       </View>
       {cards.map((card) => (

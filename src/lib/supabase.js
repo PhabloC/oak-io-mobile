@@ -25,6 +25,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: Platform.OS === "web",
-    flowType: "implicit",
+    // PKCE: o código volta na query do deep link (fragment do implicit costuma se perder no mobile).
+    flowType: "pkce",
   },
 });
