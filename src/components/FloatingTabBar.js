@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PlusIcon } from "./icons/UiIconSvg";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,7 +12,7 @@ import { radius } from "../design-system";
 
 const SPRING = { damping: 18, stiffness: 220, mass: 0.7 };
 
-function TabItem({ route, descriptor, navigation, focused, colors, shadow }) {
+function TabItem({ route, descriptor, navigation, focused, colors }) {
   const { options } = descriptor;
   const label = options.tabBarLabel ?? options.title ?? route.name;
   const Icon = options.tabBarIconComponent;
@@ -73,10 +74,78 @@ function TabItem({ route, descriptor, navigation, focused, colors, shadow }) {
   );
 }
 
-export default function FloatingTabBar({ state, descriptors, navigation }) {
+function CenterAddButton({ onPress, colors, barColor }) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <View style={{ width: 64, alignItems: "center", justifyContent: "center" }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => {
+          scale.value = withSpring(0.92, SPRING);
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, SPRING);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel="Adicionar transação"
+        hitSlop={8}
+        style={{ marginTop: -22 }}
+      >
+        <Animated.View
+          style={[
+            {
+              width: 56,
+              height: 56,
+              borderRadius: 20,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.accent,
+              borderWidth: 4,
+              borderColor: barColor,
+              boxShadow: [
+                { offsetX: 0, offsetY: 8, blurRadius: 18, color: "rgba(110, 86, 240, 0.4)" },
+              ],
+            },
+            animatedStyle,
+          ]}
+        >
+          <PlusIcon color={colors.onAccent} size={26} strokeWidth={2.6} />
+        </Animated.View>
+      </Pressable>
+    </View>
+  );
+}
+
+export default function FloatingTabBar({ state, descriptors, navigation, onAddPress }) {
   const insets = useSafeAreaInsets();
   const { colors, shadow, isDark } = useTheme();
   const bottom = Math.max(insets.bottom, 10);
+  const midpoint = Math.ceil(state.routes.length / 2);
+  const leftRoutes = state.routes.slice(0, midpoint);
+  const rightRoutes = state.routes.slice(midpoint);
+
+  // Lilás sólido que combina com o accent, sem transparência.
+  const barColor = isDark ? "#2A2440" : "#EFE9FF";
+  const borderColor = isDark ? "rgba(139, 116, 255, 0.22)" : "rgba(110, 86, 240, 0.14)";
+
+  const renderTab = (route) => {
+    const index = state.routes.findIndex((item) => item.key === route.key);
+    return (
+      <TabItem
+        key={route.key}
+        route={route}
+        descriptor={descriptors[route.key]}
+        navigation={navigation}
+        focused={state.index === index}
+        colors={colors}
+      />
+    );
+  };
 
   return (
     <View
@@ -94,26 +163,25 @@ export default function FloatingTabBar({ state, descriptors, navigation }) {
         style={{
           height: 64,
           borderRadius: radius.sheet,
-          backgroundColor: colors.surface,
-          borderWidth: 1,
-          borderColor: isDark ? colors.line : "rgba(238, 234, 246, 0.95)",
+          overflow: "visible",
+          backgroundColor: barColor,
+          borderWidth: StyleSheet.hairlineWidth * 2,
+          borderColor,
           boxShadow: shadow.float,
-          paddingHorizontal: 6,
-          flexDirection: "row",
-          alignItems: "center",
         }}
       >
-        {state.routes.map((route, index) => (
-          <TabItem
-            key={route.key}
-            route={route}
-            descriptor={descriptors[route.key]}
-            navigation={navigation}
-            focused={state.index === index}
-            colors={colors}
-            shadow={shadow}
-          />
-        ))}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 6,
+          }}
+        >
+          {leftRoutes.map(renderTab)}
+          <CenterAddButton onPress={onAddPress} colors={colors} barColor={barColor} />
+          {rightRoutes.map(renderTab)}
+        </View>
       </View>
     </View>
   );

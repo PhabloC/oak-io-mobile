@@ -1,141 +1,207 @@
-import { useState } from "react";
-import { View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { ChartColumn, LogOut, Moon, Monitor, Receipt, Sun } from "lucide-react-native";
 import Screen from "../components/Screen";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
+import {
+  BellIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserIcon,
+} from "../components/icons/UiIconSvg";
 import { useAuth } from "../context/AuthContext";
-import { useFinance } from "../context/FinanceContext";
-import { THEME_OPTIONS, useTheme } from "../context/ThemeContext";
-import { formatBRL } from "../utils/format";
-import { cn } from "@/lib/utils";
+import { useTheme } from "../context/ThemeContext";
+import { radius } from "../design-system";
 
-const THEME_ICONS = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-};
+function HeaderButton({ onPress, children, colors }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 14,
+        backgroundColor: colors.surface,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+function MenuRow({ icon: Icon, label, onPress, colors, isLast = false }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 15,
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: colors.line,
+      }}
+    >
+      <View
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 12,
+          backgroundColor: colors.accentSoft,
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 12,
+        }}
+      >
+        <Icon color={colors.ink} size={18} strokeWidth={2.1} />
+      </View>
+      <Text style={{ flex: 1, color: colors.ink, fontSize: 15, fontWeight: "600" }}>
+        {label}
+      </Text>
+      <ChevronRightIcon color={colors.muted} size={18} strokeWidth={2.2} />
+    </Pressable>
+  );
+}
+
+function Section({ title, children, colors }) {
+  return (
+    <View style={{ marginBottom: 22 }}>
+      <Text
+        style={{
+          color: colors.ink,
+          fontSize: 17,
+          fontWeight: "700",
+          marginBottom: 10,
+          paddingHorizontal: 2,
+        }}
+      >
+        {title}
+      </Text>
+      <View
+        style={{
+          backgroundColor: colors.surface,
+          borderRadius: radius.md,
+          overflow: "hidden",
+          borderWidth: 1,
+          borderColor: colors.line,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
 
 export default function PerfilScreen() {
   const navigation = useNavigation();
-  const { user, signOut, updateProfile } = useAuth();
-  const { assets } = useFinance();
-  const { preference, setPreference, colors } = useTheme();
-  const [name, setName] = useState(user?.name || "");
-  const [message, setMessage] = useState("");
-  const patrimonio = assets.reduce((acc, asset) => acc + asset.current, 0);
+  const { user, signOut } = useAuth();
+  const { colors } = useTheme();
   const initial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "O";
 
-  const save = () => {
-    const nextName = name.trim();
-    if (!nextName) return;
-    updateProfile(nextName);
-    setMessage("Perfil atualizado.");
+  const handleBack = () => {
+    navigation.navigate("Dashboard");
   };
 
   return (
     <Screen>
-      <Card className="items-center py-8">
-        <CardContent className="items-center gap-3 px-0">
-          <Avatar className="size-20" alt={user?.name || "Usuário"}>
-            {user?.avatar ? <AvatarImage source={{ uri: user.avatar }} /> : null}
-            <AvatarFallback className="bg-primary">
-              <Text className="text-2xl font-bold text-primary-foreground">{initial}</Text>
-            </AvatarFallback>
-          </Avatar>
-          <View className="items-center gap-1">
-            <Text variant="h4" className="text-center">
-              {user?.name}
-            </Text>
-            <Text variant="muted" className="text-center">
-              {user?.email}
-            </Text>
-            <Text className="mt-2 font-bold text-primary">Patrimônio {formatBRL(patrimonio)}</Text>
-          </View>
-        </CardContent>
-      </Card>
-
-      <Text variant="large" className="mb-3 mt-6">
-        Aparência
-      </Text>
-      <Card className="py-2">
-        <CardContent className="flex-row gap-2 px-2">
-          {THEME_OPTIONS.map((option) => {
-            const selected = preference === option.value;
-            const Icon = THEME_ICONS[option.value];
-            return (
-              <Button
-                key={option.value}
-                variant={selected ? "default" : "ghost"}
-                className={cn("h-auto flex-1 flex-col gap-1.5 py-3")}
-                onPress={() => setPreference(option.value)}
-              >
-                <Icon size={20} strokeWidth={2.2} color={selected ? colors.onAccent : colors.muted} />
-                <Text className={cn("text-xs font-bold", selected ? "text-primary-foreground" : "text-muted-foreground")}>
-                  {option.label}
-                </Text>
-              </Button>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      <Text variant="large" className="mb-3 mt-6">
-        Mais
-      </Text>
-      <View className="mb-2 flex-row gap-2">
-        <Button
-          variant="outline"
-          className="h-auto flex-1 flex-col gap-2 py-4"
-          onPress={() => navigation.navigate("Dividas")}
-        >
-          <Receipt size={18} color="#D9922A" />
-          <Text className="text-xs font-semibold">Dívidas</Text>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto flex-1 flex-col gap-2 py-4"
-          onPress={() => navigation.navigate("Investimento")}
-        >
-          <ChartColumn size={18} color="#3B82F6" />
-          <Text className="text-xs font-semibold">Investir</Text>
-        </Button>
+      <View
+        style={{
+          marginTop: 10,
+          marginBottom: 22,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <HeaderButton onPress={handleBack} colors={colors}>
+          <ChevronLeftIcon color={colors.ink} size={22} strokeWidth={2.2} />
+        </HeaderButton>
+        <HeaderButton onPress={() => navigation.navigate("Configuracoes")} colors={colors}>
+          <SettingsIcon color={colors.ink} size={20} strokeWidth={2.2} />
+        </HeaderButton>
       </View>
 
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Conta</CardTitle>
-          <CardDescription>Atualize como seu nome aparece no app.</CardDescription>
-        </CardHeader>
-        <CardContent className="gap-3">
-          <View className="gap-2">
-            <Label nativeID="displayName">Nome de exibição</Label>
-            <Input
-              aria-labelledby="displayName"
-              value={name}
-              onChangeText={setName}
-              placeholder="Seu nome"
-            />
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 28,
+          gap: 14,
+        }}
+      >
+        {user?.avatar ? (
+          <Image
+            source={{ uri: user.avatar }}
+            style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accentSoft }}
+          />
+        ) : (
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: colors.accent,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: colors.onAccent, fontSize: 24, fontWeight: "700" }}>
+              {initial}
+            </Text>
           </View>
-          <Button onPress={save}>
-            <Text>Salvar</Text>
-          </Button>
-          {message ? <Text className="text-sm font-medium text-primary">{message}</Text> : null}
-        </CardContent>
-      </Card>
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: colors.ink, fontSize: 20, fontWeight: "700" }}>
+            {user?.name || "Usuário"}
+          </Text>
+          <Text style={{ color: colors.muted, fontSize: 14, marginTop: 3 }}>
+            {user?.email || "—"}
+          </Text>
+        </View>
+      </View>
 
-      <Separator className="my-5" />
+      <Section title="Minha conta" colors={colors}>
+        <MenuRow
+          icon={UserIcon}
+          label="Dados pessoais"
+          colors={colors}
+          onPress={() => navigation.navigate("DadosPessoais")}
+        />
+        <MenuRow
+          icon={BellIcon}
+          label="Notificações"
+          colors={colors}
+          onPress={() => navigation.navigate("Notificacoes")}
+        />
+        <MenuRow
+          icon={SettingsIcon}
+          label="Configurações"
+          colors={colors}
+          isLast
+          onPress={() => navigation.navigate("Configuracoes")}
+        />
+      </Section>
 
-      <Button variant="destructive" onPress={signOut}>
-        <LogOut size={18} color="#fff" />
-        <Text>Sair</Text>
-      </Button>
+      <Pressable
+        onPress={signOut}
+        style={{
+          marginTop: 4,
+          marginBottom: 20,
+          height: 52,
+          borderRadius: radius.md,
+          backgroundColor: colors.tintDanger,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+        }}
+      >
+        <LogOutIcon color={colors.danger} size={18} strokeWidth={2.2} />
+        <Text style={{ color: colors.danger, fontSize: 15, fontWeight: "700" }}>Sair da conta</Text>
+      </Pressable>
     </Screen>
   );
 }

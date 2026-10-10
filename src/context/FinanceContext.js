@@ -12,11 +12,8 @@ export function FinanceProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [goals, setGoals] = useState([
-    { id: "g1", name: "Reserva de emergência", current: 8000, target: 15000 },
-    { id: "g2", name: "Viagem", current: 3200, target: 6000 },
-    { id: "g3", name: "Notebook", current: 4500, target: 4500 },
-  ]);
+  const [goals, setGoals] = useState([]);
+  const [goalsLoading, setGoalsLoading] = useState(false);
   const [debts, setDebts] = useState([
     { id: "d1", name: "Cartão", total: 2400, paid: 800 },
     { id: "d2", name: "Financiamento", total: 18000, paid: 6000 },
@@ -53,9 +50,35 @@ export function FinanceProvider({ children }) {
     setLoading(false);
   }, [user?.id, year]);
 
+  const loadGoals = useCallback(async () => {
+    if (!user?.id) {
+      setGoals([]);
+      return;
+    }
+
+    setGoalsLoading(true);
+    const { data, error: queryError } = await supabase
+      .from("metas")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (queryError) {
+      setGoalsLoading(false);
+      return;
+    }
+
+    setGoals(data || []);
+    setGoalsLoading(false);
+  }, [user?.id]);
+
   useEffect(() => {
     loadTransactions();
   }, [loadTransactions]);
+
+  useEffect(() => {
+    loadGoals();
+  }, [loadGoals]);
 
   const monthTransactions = useMemo(
     () => transactions.filter((item) => transactionMatchesMonth(item, selectedMonth)),
@@ -87,8 +110,29 @@ export function FinanceProvider({ children }) {
     return { data };
   };
 
-  const addGoal = (goal) => {
-    setGoals((current) => [{ ...goal, id: String(Date.now()) }, ...current]);
+  const addGoal = async (goal) => {
+    if (!user?.id) return { error: new Error("Sem sessão") };
+
+    const payload = {
+      title: goal.title,
+      target_value: goal.target_value,
+      current_value: goal.current_value ?? 0,
+      deadline: goal.deadline || null,
+      category: goal.category || "Economia",
+      image_url: goal.image_url || null,
+      completed: false,
+      user_id: user.id,
+    };
+
+    const { data, error: insertError } = await supabase
+      .from("metas")
+      .insert([payload])
+      .select()
+      .single();
+
+    if (insertError) return { error: insertError };
+    setGoals((current) => [data, ...current]);
+    return { data };
   };
 
   const addDebt = (debt) => {
@@ -111,6 +155,7 @@ export function FinanceProvider({ children }) {
         months: MONTHS,
         selectedMonth,
         setSelectedMonth,
+        selectedYear: year,
         transactions,
         monthTransactions,
         summary,
@@ -118,7 +163,9 @@ export function FinanceProvider({ children }) {
         error,
         addTransaction,
         goals,
+        goalsLoading,
         addGoal,
+        loadGoals,
         debts,
         addDebt,
         payDebt,

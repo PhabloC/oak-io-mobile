@@ -175,8 +175,23 @@ export function AuthProvider({ children }) {
 
   const signOut = () => supabase.auth.signOut();
 
-  const updateProfile = (name) => {
-    setUser((current) => (current ? { ...current, name } : current));
+  const updateProfile = async ({ name } = {}) => {
+    const nextName = String(name || "").trim();
+    if (!nextName) {
+      return { error: new Error("Nome obrigatório") };
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        full_name: nextName,
+        name: nextName,
+      },
+    });
+
+    if (error) return { error };
+
+    setUser(mapUser(data.user));
+    return { data: mapUser(data.user) };
   };
 
   return (

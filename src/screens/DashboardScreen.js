@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
   useWindowDimensions,
@@ -22,28 +22,34 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import {
-  Bell,
-  ChartColumn,
-  Eye,
-  EyeOff,
-  Plus,
-  Receipt,
-  Settings,
-  Target,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react-native";
 import AnimateOnFocus from "../components/AnimateOnFocus";
+import DashboardInsights from "../components/DashboardInsights";
+import DistributionChart from "../components/charts/DistributionChart";
+import MeteorShower from "../components/MeteorShower";
 import MonthPills from "../components/MonthPills";
 import TransactionForm from "../components/TransactionForm";
+import TransactionsChart from "../components/charts/TransactionsChart";
+import {
+  BellIcon,
+  EyeIcon,
+  EyeOffIcon,
+  PlusIcon,
+  SettingsIcon,
+  TargetIcon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+} from "../components/icons/UiIconSvg";
 import { useAuth } from "../context/AuthContext";
 import { useFinance } from "../context/FinanceContext";
 import { formatBRL, signedAmount } from "../utils/format";
+import TransactionTypeIcon from "../components/TransactionTypeIcon";
 import { ActionTile, Card, SectionTitle, radius } from "../design-system";
 import { useTheme } from "../context/ThemeContext";
 
 const SPRING = { damping: 20, stiffness: 220, mass: 0.8 };
+
+// Céu noturno com tom lilás suave — combina com os meteoros sem o roxo saturado.
+const HOME_SKY = ["#161222", "#1F1836", "#2A2250"];
 
 function clampValue(value, min, max) {
   "worklet";
@@ -62,8 +68,18 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const { user } = useAuth();
-  const { colors, headerGradient, toneColor } = useTheme();
-  const { months, selectedMonth, setSelectedMonth, monthTransactions, summary, loading, error } = useFinance();
+  const { colors, toneColor } = useTheme();
+  const {
+    months,
+    selectedMonth,
+    setSelectedMonth,
+    selectedYear,
+    transactions,
+    monthTransactions,
+    summary,
+    loading,
+    error,
+  } = useFinance();
   const [formOpen, setFormOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(false);
@@ -129,44 +145,40 @@ export default function DashboardScreen() {
       label: "Adicionar",
       tint: colors.accentSoft,
       onPress: () => setFormOpen(true),
-      icon: <Plus color={colors.accent} size={16} />,
+      icon: <PlusIcon color={colors.accent} size={16} strokeWidth={2.2} />,
     },
     {
       label: "Ganhos",
       tint: colors.tintSuccess,
-      onPress: () => navigation.navigate("Transacoes"),
-      icon: <TrendingUp color={colors.success} size={16} />,
+      onPress: () => navigation.navigate("Transacoes", { filter: "Ganho" }),
+      icon: <TrendingUpIcon color={colors.success} size={16} strokeWidth={2.2} />,
     },
     {
       label: "Gastos",
       tint: colors.tintDanger,
-      onPress: () => navigation.navigate("Transacoes"),
-      icon: <TrendingDown color={colors.danger} size={16} />,
+      onPress: () => navigation.navigate("Transacoes", { filter: "Gasto" }),
+      icon: <TrendingDownIcon color={colors.danger} size={16} strokeWidth={2.2} />,
     },
     {
       label: "Metas",
       tint: colors.tintInfo,
       onPress: () => navigation.navigate("Metas"),
-      icon: <Target color={colors.info} size={16} />,
-    },
-    {
-      label: "Dívidas",
-      tint: colors.tintWarning,
-      onPress: () => navigation.navigate("Dividas"),
-      icon: <Receipt color={colors.warning} size={16} />,
-    },
-    {
-      label: "Investir",
-      tint: colors.tintInfo,
-      onPress: () => navigation.navigate("Investimento"),
-      icon: <ChartColumn color={colors.info} size={16} />,
+      icon: <TargetIcon color={colors.info} size={16} strokeWidth={2.2} />,
     },
   ];
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.canvas }}>
       <StatusBar style="light" />
-      <LinearGradient colors={headerGradient} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+      <LinearGradient colors={HOME_SKY} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+        <View
+          pointerEvents="none"
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: "rgba(110, 86, 240, 0.18)",
+          }}
+        />
+        <MeteorShower />
         <SafeAreaView edges={["top"]}>
           <View
             style={{
@@ -214,7 +226,9 @@ export default function DashboardScreen() {
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <Pressable
-                  onPress={() => Alert.alert("Notificações", "Em breve você verá alertas e lembretes aqui.")}
+                  onPress={() =>
+                    navigation.navigate("Perfil", { screen: "Notificacoes" })
+                  }
                   hitSlop={8}
                   style={{
                     width: 40,
@@ -225,7 +239,7 @@ export default function DashboardScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Bell color="#fff" size={18} strokeWidth={2.2} />
+                  <BellIcon color="#fff" size={18} strokeWidth={2.2} />
                 </Pressable>
                 <Pressable
                   onPress={() => navigation.navigate("Perfil")}
@@ -239,7 +253,7 @@ export default function DashboardScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Settings color="#fff" size={18} strokeWidth={2.2} />
+                  <SettingsIcon color="#fff" size={18} strokeWidth={2.2} />
                 </Pressable>
               </View>
             </View>
@@ -275,9 +289,9 @@ export default function DashboardScreen() {
                   }}
                 >
                   {balanceVisible ? (
-                    <EyeOff color="#fff" size={18} strokeWidth={2.2} />
+                    <EyeOffIcon color="#fff" size={18} strokeWidth={2.2} />
                   ) : (
-                    <Eye color="#fff" size={18} strokeWidth={2.2} />
+                    <EyeIcon color="#fff" size={18} strokeWidth={2.2} />
                   )}
                 </Pressable>
               </View>
@@ -328,13 +342,19 @@ export default function DashboardScreen() {
 
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
               <Card style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 12 }}>
-                <Text style={{ color: colors.muted, fontSize: 11 }}>Receita</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <TrendingUpIcon color={colors.success} size={14} strokeWidth={2.4} />
+                  <Text style={{ color: colors.muted, fontSize: 11 }}>Receita</Text>
+                </View>
                 <Text style={{ marginTop: 2, color: colors.success, fontSize: 15, fontWeight: "700" }}>
                   {formatBRL(summary.receita)}
                 </Text>
               </Card>
               <Card style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 12 }}>
-                <Text style={{ color: colors.muted, fontSize: 11 }}>Despesa</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <TrendingDownIcon color={colors.danger} size={14} strokeWidth={2.4} />
+                  <Text style={{ color: colors.muted, fontSize: 11 }}>Despesa</Text>
+                </View>
                 <Text style={{ marginTop: 2, color: colors.danger, fontSize: 15, fontWeight: "700" }}>
                   {formatBRL(summary.despesa)}
                 </Text>
@@ -345,44 +365,75 @@ export default function DashboardScreen() {
 
         {error ? <Text style={{ color: colors.danger, marginBottom: 12 }}>{error}</Text> : null}
 
-        <SectionTitle>Movimentações</SectionTitle>
         <ScrollView
-          style={{ flex: 1, marginTop: 8, minHeight: 180 }}
+          style={{ flex: 1, marginTop: 4, minHeight: 180 }}
           contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled
         >
-          <MonthPills months={months} selectedMonth={selectedMonth} onSelect={setSelectedMonth} />
+          <SectionTitle>Insights</SectionTitle>
+          <View style={{ marginTop: 10 }}>
+            <DashboardInsights
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              transactions={transactions}
+              monthTransactions={monthTransactions}
+            />
+          </View>
 
-          {loading ? (
-            <ActivityIndicator color={colors.accent} style={{ paddingVertical: 24 }} />
-          ) : monthTransactions.length === 0 ? (
-            <Text style={{ color: colors.muted, textAlign: "center", paddingVertical: 20 }}>
-              Nenhuma transação neste mês.
-            </Text>
-          ) : (
-            monthTransactions.map((item) => (
-              <View
-                key={item.id}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingVertical: 12,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.line,
-                }}
-              >
-                <View style={{ flex: 1, paddingRight: 12 }}>
-                  <Text style={{ color: colors.ink, fontWeight: "600" }}>{item.title}</Text>
-                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{item.category}</Text>
-                </View>
-                <Text style={{ color: toneColor(item.type), fontWeight: "700" }}>
-                  {signedAmount(item.type, item.value)}
-                </Text>
-              </View>
-            ))
-          )}
+          <SectionTitle>Gráficos</SectionTitle>
+          <View style={{ marginTop: 10 }}>
+            <TransactionsChart
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              transactions={transactions}
+            />
+            <DistributionChart
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              transactions={transactions}
+            />
+          </View>
+
+          <SectionTitle>Movimentações</SectionTitle>
+          <View style={{ marginTop: 8 }}>
+            <MonthPills months={months} selectedMonth={selectedMonth} onSelect={setSelectedMonth} />
+
+            {loading ? (
+              <ActivityIndicator color={colors.accent} style={{ paddingVertical: 24 }} />
+            ) : monthTransactions.length === 0 ? (
+              <Text style={{ color: colors.muted, textAlign: "center", paddingVertical: 20 }}>
+                Nenhuma transação neste mês.
+              </Text>
+            ) : (
+              monthTransactions.map((item) => (
+                  <View
+                    key={item.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingVertical: 12,
+                      borderBottomWidth: 1,
+                      borderBottomColor: colors.line,
+                    }}
+                  >
+                    <View style={{ marginRight: 12 }}>
+                      <TransactionTypeIcon type={item.type} category={item.category} />
+                    </View>
+                    <View style={{ flex: 1, paddingRight: 12 }}>
+                      <Text style={{ color: colors.ink, fontWeight: "600" }}>{item.title}</Text>
+                      <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>
+                        {item.category}
+                      </Text>
+                    </View>
+                    <Text style={{ color: toneColor(item.type), fontWeight: "700" }}>
+                      {signedAmount(item.type, item.value)}
+                    </Text>
+                  </View>
+                ))
+            )}
+          </View>
         </ScrollView>
       </Animated.View>
 

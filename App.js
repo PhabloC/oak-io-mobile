@@ -11,8 +11,6 @@ import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import { NAV_THEME } from "./src/lib/theme";
 import LoginScreen from "./src/screens/LoginScreen";
 import MainTabs from "./src/navigation/MainTabs";
-import DividasScreen from "./src/screens/DividasScreen";
-import InvestimentoScreen from "./src/screens/InvestimentoScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,19 +26,16 @@ function RootNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: "fade",
-        animationDuration: 280,
+        animation: "none",
+        detachPreviousScreen: false,
+        freezeOnBlur: true,
         contentStyle: { backgroundColor: colors.canvas },
       }}
     >
       {user ? (
-        <>
-          <Stack.Screen name="Main" component={MainTabs} options={{ animation: "fade" }} />
-          <Stack.Screen name="Dividas" component={DividasScreen} />
-          <Stack.Screen name="Investimento" component={InvestimentoScreen} />
-        </>
+        <Stack.Screen name="Main" component={MainTabs} />
       ) : (
-        <Stack.Screen name="Login" component={LoginScreen} options={{ animation: "fade" }} />
+        <Stack.Screen name="Login" component={LoginScreen} />
       )}
     </Stack.Navigator>
   );
@@ -52,8 +47,10 @@ function ThemedApp() {
   return (
     <NavigationContainer theme={NAV_THEME[scheme]}>
       <StatusBar style={statusBar} />
-      <RootNavigator />
-      <PortalHost />
+      <View style={{ flex: 1, backgroundColor: scheme === "dark" ? "#12101A" : "#F4F2FA" }}>
+        <RootNavigator />
+        <PortalHost />
+      </View>
     </NavigationContainer>
   );
 }

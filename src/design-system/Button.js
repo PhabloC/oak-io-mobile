@@ -2,7 +2,7 @@ import { Pressable, Text, View } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 import { radius } from "./tokens";
 
-export function PrimaryButton({ label, onPress, icon, disabled = false }) {
+export function PrimaryButton({ label, onPress, icon, disabled = false, style }) {
   const { colors } = useTheme();
 
   return (
@@ -10,19 +10,22 @@ export function PrimaryButton({ label, onPress, icon, disabled = false }) {
       onPress={onPress}
       disabled={disabled}
       android_ripple={{ color: "rgba(255,255,255,0.22)", borderless: false }}
-      style={({ pressed }) => ({
-        width: "100%",
-        height: 52,
-        borderRadius: 26,
-        overflow: "hidden",
-        backgroundColor: colors.accent,
-        opacity: disabled ? 0.5 : pressed ? 0.92 : 1,
-        paddingHorizontal: 18,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "row",
-        elevation: 2,
-      })}
+      style={({ pressed }) => [
+        {
+          width: "100%",
+          height: 52,
+          borderRadius: 26,
+          overflow: "hidden",
+          backgroundColor: colors.accent,
+          opacity: disabled ? 0.5 : pressed ? 0.92 : 1,
+          paddingHorizontal: 18,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          elevation: 2,
+        },
+        style,
+      ]}
     >
       {icon ? <View style={{ marginRight: 10 }}>{icon}</View> : null}
       <Text style={{ color: colors.onAccent, fontSize: 16, fontWeight: "700" }}>{label}</Text>

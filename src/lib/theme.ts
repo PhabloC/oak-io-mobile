@@ -51,9 +51,10 @@ export const NAV_THEME: Record<"light" | "dark", Theme> = {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
+      // Usa o mesmo tom do canvas para evitar flash branco nas trocas de tela.
       background: THEME.light.background,
       border: THEME.light.border,
-      card: THEME.light.card,
+      card: THEME.light.background,
       notification: THEME.light.destructive,
       primary: THEME.light.primary,
       text: THEME.light.foreground,
@@ -65,7 +66,7 @@ export const NAV_THEME: Record<"light" | "dark", Theme> = {
       ...DarkTheme.colors,
       background: THEME.dark.background,
       border: THEME.dark.border,
-      card: THEME.dark.card,
+      card: THEME.dark.background,
       notification: THEME.dark.destructive,
       primary: THEME.dark.primary,
       text: THEME.dark.foreground,
