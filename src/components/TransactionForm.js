@@ -33,6 +33,14 @@ function formatInputCurrency(inputValue) {
   });
 }
 
+function formatNumberCurrency(value) {
+  const amount = Number(value) || 0;
+  return amount.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function parseCurrencyToNumber(inputValue) {
   if (!inputValue) return 0;
   return parseFloat(String(inputValue).replace(/\./g, "").replace(",", ".")) || 0;
@@ -59,10 +67,18 @@ function parseDateString(value) {
   return new Date(year, month - 1, day);
 }
 
-export default function TransactionForm({ visible, onClose }) {
+export default function TransactionForm({ visible, onClose, transaction = null }) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const { addTransaction, selectedMonth } = useFinance();
+  const {
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    excludeTransactionFromMonth,
+    selectedMonth,
+  } = useFinance();
+
+  const isEditing = Boolean(transaction?.id);
 
   const initialDate = useMemo(
     () => parseDateString(dateForMonth(selectedMonth)),
@@ -79,20 +95,35 @@ export default function TransactionForm({ visible, onClose }) {
   const [todosMeses, setTodosMeses] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
-    setTitle("");
-    setValue("");
-    setType("Ganho");
-    setMethod("Pix");
-    setDate(parseDateString(dateForMonth(selectedMonth)));
-    setCategory("");
-    setDescription("");
-    setTodosMeses(false);
+
+    if (transaction?.id) {
+      setTitle(transaction.title || "");
+      setValue(formatNumberCurrency(transaction.value));
+      setType(transaction.type || "Ganho");
+      setMethod(transaction.method || "Pix");
+      setDate(parseDateString(transaction.date || dateForMonth(selectedMonth)));
+      setCategory(transaction.category || "");
+      setDescription(transaction.description || "");
+      setTodosMeses(Boolean(transaction.todos_meses));
+    } else {
+      setTitle("");
+      setValue("");
+      setType("Ganho");
+      setMethod("Pix");
+      setDate(parseDateString(dateForMonth(selectedMonth)));
+      setCategory("");
+      setDescription("");
+      setTodosMeses(false);
+    }
+
     setShowDatePicker(false);
     setSaving(false);
-  }, [visible, selectedMonth]);
+    setDeleting(false);
+  }, [visible, selectedMonth, transaction]);
 
   const changeType = (nextType) => {
     setType(nextType);
@@ -104,21 +135,20 @@ export default function TransactionForm({ visible, onClose }) {
     if (selected) setDate(selected);
   };
 
-  const save = async () => {
+  const buildPayload = () => {
     const numeric = parseCurrencyToNumber(value);
     const cleanTitle = title.trim();
 
     if (!cleanTitle) {
       Alert.alert("Campo obrigatório", "Informe o título da transação.");
-      return;
+      return null;
     }
     if (!numeric) {
       Alert.alert("Campo obrigatório", "Informe um valor válido.");
-      return;
+      return null;
     }
 
-    setSaving(true);
-    const result = await addTransaction({
+    return {
       title: cleanTitle,
       value: numeric,
       type,
@@ -128,14 +158,90 @@ export default function TransactionForm({ visible, onClose }) {
       category: category || null,
       description: description.trim() || null,
       todos_meses: todosMeses,
-    });
+    };
+  };
+
+  const save = async () => {
+    const payload = buildPayload();
+    if (!payload) return;
+
+    setSaving(true);
+    const result = isEditing
+      ? await updateTransaction(transaction.id, payload)
+      : await addTransaction(payload);
     setSaving(false);
 
     if (result?.error) {
-      Alert.alert("Não foi possível salvar", "A transação não entrou no Supabase. Tente novamente.");
+      Alert.alert(
+        "Não foi possível salvar",
+        isEditing
+          ? "A transação não foi atualizada. Tente novamente."
+          : "A transação não entrou no Supabase. Tente novamente.",
+      );
       return;
     }
     onClose();
+  };
+
+  const removePermanently = async () => {
+    setDeleting(true);
+    const result = await deleteTransaction(transaction.id);
+    setDeleting(false);
+
+    if (result?.error) {
+      Alert.alert("Não foi possível excluir", "Tente novamente em instantes.");
+      return;
+    }
+    onClose();
+  };
+
+  const removeFromCurrentMonth = async () => {
+    setDeleting(true);
+    const result = await excludeTransactionFromMonth(transaction, selectedMonth);
+    setDeleting(false);
+
+    if (result?.error) {
+      Alert.alert("Não foi possível excluir", "Tente novamente em instantes.");
+      return;
+    }
+    onClose();
+  };
+
+  const confirmDelete = () => {
+    if (!transaction?.id || deleting) return;
+
+    if (transaction.todos_meses) {
+      Alert.alert(
+        "Excluir transação",
+        "Essa transação se repete em todos os meses. O que deseja fazer?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: `Só em ${selectedMonth}`,
+            onPress: removeFromCurrentMonth,
+          },
+          {
+            text: "Excluir tudo",
+            style: "destructive",
+            onPress: removePermanently,
+          },
+        ],
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Excluir transação",
+      "Tem certeza que deseja excluir esta transação?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: removePermanently,
+        },
+      ],
+    );
   };
 
   return (
@@ -177,10 +283,12 @@ export default function TransactionForm({ visible, onClose }) {
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
                 <Text style={{ color: colors.ink, fontSize: 20, fontWeight: "700" }}>
-                  Nova transação
+                  {isEditing ? "Editar transação" : "Nova transação"}
                 </Text>
                 <Text style={{ color: colors.muted, fontSize: 13, marginTop: 2 }}>
-                  Preencha as informações abaixo
+                  {isEditing
+                    ? "Altere os dados ou exclua a movimentação"
+                    : "Preencha as informações abaixo"}
                 </Text>
               </View>
               <Pressable
@@ -383,14 +491,40 @@ export default function TransactionForm({ visible, onClose }) {
                 backgroundColor: colors.surface,
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 10,
               }}
             >
               <PrimaryButton
-                label={saving ? "Salvando..." : "Adicionar"}
+                label={
+                  saving
+                    ? "Salvando..."
+                    : isEditing
+                      ? "Salvar alterações"
+                      : "Adicionar"
+                }
                 onPress={save}
-                disabled={saving}
+                disabled={saving || deleting}
                 style={{ width: 220 }}
               />
+              {isEditing ? (
+                <Pressable
+                  onPress={confirmDelete}
+                  disabled={saving || deleting}
+                  hitSlop={8}
+                  style={{ paddingVertical: 8, paddingHorizontal: 12 }}
+                >
+                  <Text
+                    style={{
+                      color: colors.danger,
+                      fontSize: 15,
+                      fontWeight: "700",
+                      opacity: deleting ? 0.6 : 1,
+                    }}
+                  >
+                    {deleting ? "Excluindo..." : "Excluir transação"}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
           </View>
         </KeyboardAvoidingView>

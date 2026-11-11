@@ -11,6 +11,7 @@ import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import { NAV_THEME } from "./src/lib/theme";
 import LoginScreen from "./src/screens/LoginScreen";
 import MainTabs from "./src/navigation/MainTabs";
+import ProfileStack from "./src/navigation/ProfileStack";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +34,10 @@ function RootNavigator() {
       }}
     >
       {user ? (
-        <Stack.Screen name="Main" component={MainTabs} />
+        <>
+          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Perfil" component={ProfileStack} />
+        </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}

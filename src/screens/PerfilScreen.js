@@ -8,6 +8,7 @@ import {
   LogOutIcon,
   SettingsIcon,
   UserIcon,
+  WalletIcon,
 } from "../components/icons/UiIconSvg";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -102,7 +103,11 @@ export default function PerfilScreen() {
   const initial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "O";
 
   const handleBack = () => {
-    navigation.navigate("Dashboard");
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate("Main", { screen: "Dashboard" });
   };
 
   return (
@@ -162,6 +167,16 @@ export default function PerfilScreen() {
           </Text>
         </View>
       </View>
+
+      <Section title="Finanças" colors={colors}>
+        <MenuRow
+          icon={WalletIcon}
+          label="Investimentos"
+          colors={colors}
+          isLast
+          onPress={() => navigation.navigate("Main", { screen: "Investimento" })}
+        />
+      </Section>
 
       <Section title="Minha conta" colors={colors}>
         <MenuRow

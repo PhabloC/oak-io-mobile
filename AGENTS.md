@@ -12,7 +12,9 @@ The website OAuth redirect does not work on the device. Use the native Google fl
 
 Same backend as the website. Every read and write uses the signed-in user and relies on row level security (`auth.uid() = user_id`).
 
-Tables in use: `transactions`, `metas`, `dividas`, `ativos`, `patrimonio_historico`.
+Tables in use: `transactions`, `metas`, `dividas`, `ativos`, `patrimonio_historico`, `cotacoes_cache`, `ativo_snapshots`, `carteira_snapshots`.
+
+Market quotes: search/sync via `src/services/market` (brapi). Prefer Supabase Edge Functions `market-tickers` and `market-quotes` when deployed; see `docs/DEPLOY-MARKET.md`.
 
 Transaction types stay `Ganho`, `Gasto`, and `Investimento`. Month balance is income minus expenses minus investments. Confirm column names in the migrations or the website before writing a query.
 

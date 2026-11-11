@@ -26,6 +26,22 @@ export default function TransactionsScreen() {
   const [monthFilter, setMonthFilter] = useState(currentMonthName);
   const [filter, setFilter] = useState(() => resolveFilter(route.params?.filter));
   const [formOpen, setFormOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+
+  const openCreateForm = () => {
+    setEditingTransaction(null);
+    setFormOpen(true);
+  };
+
+  const openEditForm = (item) => {
+    setEditingTransaction(item);
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditingTransaction(null);
+  };
 
   useEffect(() => {
     setFilter(resolveFilter(route.params?.filter));
@@ -65,7 +81,7 @@ export default function TransactionsScreen() {
         </View>
 
         <Pressable
-          onPress={() => setFormOpen(true)}
+          onPress={openCreateForm}
           accessibilityRole="button"
           accessibilityLabel="Adicionar transação"
           style={{
@@ -101,26 +117,37 @@ export default function TransactionsScreen() {
         </Text>
       ) : (
         visible.map((item) => (
-          <Card key={item.id} style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ marginRight: 12 }}>
-                <TransactionTypeIcon type={item.type} category={item.category} />
-              </View>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={{ color: colors.ink, fontWeight: "600" }}>{item.title}</Text>
-                <Text style={{ marginTop: 4, color: colors.muted, fontSize: 12 }}>
-                  {item.type} · {item.category} · {item.month}
+          <Pressable
+            key={item.id}
+            onPress={() => openEditForm(item)}
+            accessibilityRole="button"
+            accessibilityLabel={`Editar transação ${item.title}`}
+          >
+            <Card style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ marginRight: 12 }}>
+                  <TransactionTypeIcon type={item.type} category={item.category} />
+                </View>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={{ color: colors.ink, fontWeight: "600" }}>{item.title}</Text>
+                  <Text style={{ marginTop: 4, color: colors.muted, fontSize: 12 }}>
+                    {item.type} · {item.category} · {item.month}
+                  </Text>
+                </View>
+                <Text style={{ color: toneColor(item.type), fontWeight: "700" }}>
+                  {signedAmount(item.type, item.value)}
                 </Text>
               </View>
-              <Text style={{ color: toneColor(item.type), fontWeight: "700" }}>
-                {signedAmount(item.type, item.value)}
-              </Text>
-            </View>
-          </Card>
+            </Card>
+          </Pressable>
         ))
       )}
 
-      <TransactionForm visible={formOpen} onClose={() => setFormOpen(false)} />
+      <TransactionForm
+        visible={formOpen}
+        onClose={closeForm}
+        transaction={editingTransaction}
+      />
     </Screen>
   );
 }

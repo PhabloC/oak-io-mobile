@@ -38,6 +38,7 @@ import {
   TargetIcon,
   TrendingDownIcon,
   TrendingUpIcon,
+  WalletIcon,
 } from "../components/icons/UiIconSvg";
 import { useAuth } from "../context/AuthContext";
 import { useFinance } from "../context/FinanceContext";
@@ -81,8 +82,24 @@ export default function DashboardScreen() {
     error,
   } = useFinance();
   const [formOpen, setFormOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(false);
+
+  const openCreateForm = () => {
+    setEditingTransaction(null);
+    setFormOpen(true);
+  };
+
+  const openEditForm = (item) => {
+    setEditingTransaction(item);
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditingTransaction(null);
+  };
   const initial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "O";
   const greeting = useMemo(() => greetingForNow(), []);
   const displayName = user?.name?.trim() || "Usuário";
@@ -144,7 +161,7 @@ export default function DashboardScreen() {
     {
       label: "Adicionar",
       tint: colors.accentSoft,
-      onPress: () => setFormOpen(true),
+      onPress: openCreateForm,
       icon: <PlusIcon color={colors.accent} size={16} strokeWidth={2.2} />,
     },
     {
@@ -164,6 +181,12 @@ export default function DashboardScreen() {
       tint: colors.tintInfo,
       onPress: () => navigation.navigate("Metas"),
       icon: <TargetIcon color={colors.info} size={16} strokeWidth={2.2} />,
+    },
+    {
+      label: "Investir",
+      tint: colors.tintWarning,
+      onPress: () => navigation.navigate("Investimento"),
+      icon: <WalletIcon color={colors.warning} size={16} strokeWidth={2.2} />,
     },
   ];
 
@@ -272,8 +295,21 @@ export default function DashboardScreen() {
                   gap: 10,
                 }}
               >
-                <Text style={{ color: colors.onAccent, fontSize: 34, fontWeight: "700" }}>
-                  {balanceVisible ? formatBRL(summary.saldo) : "R$ ****"}
+                <Text
+                  style={{
+                    color:
+                      balanceVisible && summary.saldo < 0
+                        ? colors.danger
+                        : colors.onAccent,
+                    fontSize: 34,
+                    fontWeight: "700",
+                  }}
+                >
+                  {balanceVisible
+                    ? summary.saldo < 0
+                      ? `- ${formatBRL(summary.saldo)}`
+                      : formatBRL(summary.saldo)
+                    : "R$ ****"}
                 </Text>
                 <Pressable
                   onPress={() => setBalanceVisible((current) => !current)}
@@ -407,16 +443,20 @@ export default function DashboardScreen() {
               </Text>
             ) : (
               monthTransactions.map((item) => (
-                  <View
+                  <Pressable
                     key={item.id}
-                    style={{
+                    onPress={() => openEditForm(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Editar transação ${item.title}`}
+                    style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "space-between",
                       paddingVertical: 12,
                       borderBottomWidth: 1,
                       borderBottomColor: colors.line,
-                    }}
+                      opacity: pressed ? 0.7 : 1,
+                    })}
                   >
                     <View style={{ marginRight: 12 }}>
                       <TransactionTypeIcon type={item.type} category={item.category} />
@@ -430,14 +470,18 @@ export default function DashboardScreen() {
                     <Text style={{ color: toneColor(item.type), fontWeight: "700" }}>
                       {signedAmount(item.type, item.value)}
                     </Text>
-                  </View>
+                  </Pressable>
                 ))
             )}
           </View>
         </ScrollView>
       </Animated.View>
 
-      <TransactionForm visible={formOpen} onClose={() => setFormOpen(false)} />
+      <TransactionForm
+        visible={formOpen}
+        onClose={closeForm}
+        transaction={editingTransaction}
+      />
     </GestureHandlerRootView>
   );
 }

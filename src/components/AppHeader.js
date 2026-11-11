@@ -4,7 +4,12 @@ import { ChevronLeftIcon } from "./icons/UiIconSvg";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
-export default function AppHeader({ title, showBack = false, onlyBack = false }) {
+export default function AppHeader({
+  title,
+  showBack = false,
+  onlyBack = false,
+  showAvatar = true,
+}) {
   const navigation = useNavigation();
   const { user } = useAuth();
   const { colors, shadow } = useTheme();
@@ -48,7 +53,7 @@ export default function AppHeader({ title, showBack = false, onlyBack = false })
 
   return (
     <View style={{ marginBottom: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, paddingRight: 12 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, paddingRight: showAvatar ? 12 : 0 }}>
         {backButton}
         <View style={{ flex: 1 }}>
           {title ? (
@@ -61,20 +66,22 @@ export default function AppHeader({ title, showBack = false, onlyBack = false })
           )}
         </View>
       </View>
-      <Pressable
-        onPress={() => navigation.navigate("Main", { screen: "Perfil" })}
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.accent,
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: shadow.card,
-        }}
-      >
-        <Text style={{ color: colors.onAccent, fontSize: 16, fontWeight: "700" }}>{initial}</Text>
-      </Pressable>
+      {showAvatar ? (
+        <Pressable
+          onPress={() => navigation.navigate("Perfil")}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: colors.accent,
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: shadow.card,
+          }}
+        >
+          <Text style={{ color: colors.onAccent, fontSize: 16, fontWeight: "700" }}>{initial}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

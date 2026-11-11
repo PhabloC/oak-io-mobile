@@ -6,12 +6,12 @@ import {
   CircleDollarIcon,
   HomeIcon,
   TargetIcon,
-  UserIcon,
+  WalletIcon,
 } from "../components/icons/UiIconSvg";
 import DashboardScreen from "../screens/DashboardScreen";
 import TransactionsScreen from "../screens/TransactionsScreen";
 import MetasScreen from "../screens/MetasScreen";
-import ProfileStack from "./ProfileStack";
+import InvestimentoScreen from "../screens/InvestimentoScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,7 +19,7 @@ const tabs = [
   { name: "Dashboard", component: DashboardScreen, Icon: HomeIcon, label: "Início" },
   { name: "Transacoes", component: TransactionsScreen, Icon: CircleDollarIcon, label: "Extrato" },
   { name: "Metas", component: MetasScreen, Icon: TargetIcon, label: "Metas" },
-  { name: "Perfil", component: ProfileStack, Icon: UserIcon, label: "Perfil" },
+  { name: "Investimento", component: InvestimentoScreen, Icon: WalletIcon, label: "Investir" },
 ];
 
 export default function MainTabs() {
